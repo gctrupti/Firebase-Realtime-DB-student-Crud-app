@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Data - CRUD</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      animation: gradientBG 10s ease infinite;
+      background: linear-gradient(-45deg, #2c3e50, #3498db, #8e44ad, #1abc9c);
+      background-size: 400% 400%;
+    }
+
+    @keyframes gradientBG {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    .container {
+      background-color: rgba(255, 255, 255, 0.95);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+      max-width: 400px;
+      width: 90%;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #2c3e50;
+    }
+
+    label {
+      display: block;
+      margin: 10px 0 5px;
+      font-weight: bold;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    input:focus, select:focus {
+      border-color: #3498db;
+      box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+    }
+
+    button {
+      width: 48%;
+      padding: 10px;
+      margin: 5px 1%;
+      font-weight: bold;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Student Form</h2>
+
+    <label>Name</label>
+    <input id="Namebox" type="text" placeholder="Enter name">
+
+    <label>Roll No</label>
+    <input id="Rollbox" type="text" placeholder="Enter roll no">
+
+    <label>Section</label>
+    <input id="Secbox" type="text" placeholder="Enter section">
+
+    <label>Gender</label>
+    <select id="Genbox">
+      <option value="Male">Male</option>
+      <option value="Female">Female</option>
+    </select>
+
+    <div style="text-align:center;">
+      <button id="Insbtn">INSERT</button>
+      <button id="Selbtn">SELECT</button>
+      <button id="Updbtn">UPDATE</button>
+      <button id="Delbtn">DELETE</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+    import { getDatabase, ref, get, set, child, update, remove } 
+    from "https://www.gstatic.com/firebasejs/11.6.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCEWkqdVxvg5_UhZIwxV3yePRUUIQ29a_w",
+      authDomain: "miniproject-86d6f.firebaseapp.com",
+      projectId: "miniproject-86d6f",
+      storageBucket: "miniproject-86d6f.appspot.com",
+      messagingSenderId: "846568508787",
+      appId: "1:846568508787:web:ad38019420fd6597b38906"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase();
+
+    const namebox = document.getElementById("Namebox");
+    const rollbox = document.getElementById("Rollbox");
+    const secbox = document.getElementById("Secbox");
+    const genbox = document.getElementById("Genbox");
+
+    const insBtn = document.getElementById("Insbtn");
+    const selBtn = document.getElementById("Selbtn");
+    const updBtn = document.getElementById("Updbtn");
+    const delBtn = document.getElementById("Delbtn");
+
+    function InsertData() {
+      set(ref(db, "TheStudents/" + rollbox.value), {
+        NameOfStd: namebox.value,
+        RollNo: rollbox.value,
+        Section: secbox.value,
+        Gender: genbox.value
+      })
+      .then(() => {
+        alert("Data stored successfully!");
+      })
+      .catch((error) => {
+        alert("Insert failed: " + error);
+      });
+    }
+
+    function SelectData() {
+      const dbref = ref(db);
+      get(child(dbref, "TheStudents/" + rollbox.value))
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            namebox.value = snapshot.val().NameOfStd;
+            secbox.value = snapshot.val().Section;
+            genbox.value = snapshot.val().Gender;
+          } else {
+            alert("No data found.");
+          }
+        })
+        .catch((error) => {
+          alert("Select failed: " + error);
+        });
+    }
+
+    function UpdateData() {
+      update(ref(db, "TheStudents/" + rollbox.value), {
+        NameOfStd: namebox.value,
+        Section: secbox.value,
+        Gender: genbox.value
+      })
+      .then(() => {
+        alert("Data updated successfully!");
+      })
+      .catch((error) => {
+        alert("Update failed: " + error);
+      });
+    }
+
+    function DeleteData() {
+      remove(ref(db, "TheStudents/" + rollbox.value))
+      .then(() => {
+        alert("Data removed successfully!");
+      })
+      .catch((error) => {
+        alert("Delete failed: " + error);
+      });
+    }
+
+    insBtn.addEventListener("click", InsertData);
+    selBtn.addEventListener("click", SelectData);
+    updBtn.addEventListener("click", UpdateData);
+    delBtn.addEventListener("click", DeleteData);
+  </script>
+</body>
+</html>
